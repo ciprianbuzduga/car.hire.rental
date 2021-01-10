@@ -1,0 +1,742 @@
+openapi: 3.0.1
+info:
+  title: Car Hire API
+  version: 0.1.0
+  contact:
+    name: Ciprian Buzduga
+  description: Car Hire API
+servers:
+  - url: http://localhost:{port}
+    description: local environment
+    variables:
+      port:
+        default: '8080'
+
+security:
+  - oAuth:
+      - write
+      - read
+
+paths:
+  /users:
+    get:
+      tags:
+        - user
+      summary: Return a paginated list with the users
+      description: Return a paginated list with the users
+      operationId: getUsers
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of page used in pagination
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          required: false
+          description: The number of users retrived from current page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: 'username,asc'
+          required: false  
+          description: A pair consists from property name and type of sorting splits by a comma
+      responses:
+        '200':
+          $ref: '#/components/responses/PageUsers'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags:
+        - user
+      summary: Create a user
+      description: Create a new user
+      operationId: createUser
+      requestBody:
+        description: Payload of user
+        required : true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequestDTO'
+      responses:
+        '201':
+          description: A new user was created with success
+          headers:
+            'Location':
+              $ref: '#/components/headers/UserLocation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{id}:
+    get:
+      tags:
+        - user
+      summary: Return a user by id.
+      description: Return a user by id. The id is a string.
+      operationId: getUser
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of user
+          required: true
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserResponseDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - user
+      summary: Delete a user by id
+      description: Delete a user by id. The id is a string.
+      operationId: deleteUser
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of user
+          required: true
+      responses:
+        '204':
+          description: Delete a user with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      tags:
+        - user
+      summary: Update user
+      description: Update a user’s details using a PATCH request
+      operationId: updateUser
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of user
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/PatchBody'
+      responses:
+        '204':
+          description: Update a user with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /cars:
+    post:
+      tags:
+        - car
+      summary: Create a car
+      description: Add a car to the fleet
+      operationId: addCar
+      requestBody:
+        description: Payload of car
+        required : true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarRequestDTO'
+      responses:
+        '201':
+          description: A new car was added with success to the fleet
+          headers:
+            'Location':
+              $ref: '#/components/headers/CarLocation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      tags:
+        - car
+      summary: Return a paginated list with the cars
+      description: Return a paginated list with the cars
+      operationId: getCars
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of page used in pagination
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          required: false
+          description: The number of cars retrived from current page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: 'year,desc'
+          required: false  
+          description: A pair consists from property name and type of sorting splits by a comma
+        - in: query
+          name: status
+          schema:
+            type: string
+          required: false  
+          description: A value to filter cars by status
+      responses:
+        '200':
+          $ref: '#/components/responses/PageCars'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /cars/{id}:
+    get:
+      tags:
+        - car
+      summary: Return a car by id.
+      description: Return a car by id. The id is a string.
+      operationId: getCar
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of car
+          required: true
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/CarResponseDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - car
+      summary: Delete a car by id
+      description: Delete a car by id. The id is a string.
+      operationId: deleteCar
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of car
+          required: true
+      responses:
+        '204':
+          description: Delete a car with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      tags:
+        - car
+      summary: Update car
+      description: Update a car’s details using a PATCH request
+      operationId: updateCar
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of car
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/PatchBody'
+      responses:
+        '204':
+          description: Update a car with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /countries:
+    post:
+      tags:
+        - country
+      summary: Create a country
+      description: Create a country
+      operationId: createCountry
+      requestBody:
+        description: Payload of country
+        required : true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountryRequestDTO'
+      responses:
+        '201':
+          description: A new country was added with success
+          headers:
+            'Location':
+              $ref: '#/components/headers/CountryLocation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      tags:
+        - country
+      summary: Return a list with the countries
+      description: Return a list with the countries
+      operationId: getCountries
+      responses:
+        '200':
+          $ref: '#/components/responses/ListCountries'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /countries/{id}:
+    get:
+      tags:
+        - country
+      summary: Return a country by id.
+      description: Return a country by id. The id is a string.
+      operationId: getCountry
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of country
+          required: true
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/CountryResponseDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - country
+      summary: Delete a country by id
+      description: Delete hard a country by id. The id is a string.
+      operationId: deleteCountry
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of country
+          required: true
+      responses:
+        '204':
+          description: Delete a country with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      tags:
+        - country
+      summary: Update a country
+      description: Update a country’s details using a PATCH request
+      operationId: updateCountry
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of country
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/PatchBody'
+      responses:
+        '204':
+          description: Update a country with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  requestBodies:
+    PatchBody:
+      description: A message in JsonPatch format
+      required: true
+      content:
+        application/json-patch+json:
+          schema:
+            $ref: '#/components/schemas/PatchBody'
+
+  responses:
+    Unauthorized:
+      description: unauthorized
+
+    BadRequest:
+      description: bad request
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ValidationDTO'
+
+    ResourceNotFoundError:
+      description: resource not found error
+    ServerError:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDTO'
+
+    PageUsers:
+      description: A page with users retrived from getUsers call
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PageUsers'
+
+    PageCars:
+      description: A page with cars retrived from getCars call
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PageCars'
+
+    ListCountries:
+      description: A list of countries retrived from getCountries call
+      content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CountryResponseDTO'
+
+  headers:
+    UserLocation:
+      schema:
+        type: string
+      description: The url for access a user by id
+
+    CarLocation:
+      schema:
+        type: string
+      description: The url for access a car by id
+
+    CountryLocation:
+      schema:
+        type: string
+      description: The url for access a country by id
+
+  schemas:
+    PatchBody:
+      type: array
+      items:
+        $ref: '#/components/schemas/PatchDocument'
+
+    PatchDocument:
+      type: object
+      description: A JSONPatch document as defined by RFC 6902.
+      required:
+       - 'op'
+       - 'path'
+       - 'value'
+      properties: 
+       op: 
+        type: string 
+        description: The operation to be performed 
+        enum:
+         - 'add'
+         - 'remove'
+         - 'replace'
+         - 'move'
+         - 'copy'
+         - 'test'
+       path: 
+        type: string 
+        description: A JSON-Pointer 
+       value: 
+        type: object 
+        description: The value to be used within the operations.
+       from: 
+        type: string 
+        description: A string containing a JSON Pointer value.
+
+    PageRecords:
+      type: object
+      properties:
+        totalNoRecords:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        currentPage:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+
+    PageUsers:
+      allOf:
+        - $ref: '#/components/schemas/PageRecords'
+        - type: object
+          properties:
+            users:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserResponseDTO'
+
+    PageCars:
+      allOf:
+        - $ref: '#/components/schemas/PageRecords'
+        - type: object
+          properties:
+            cars:
+              type: array
+              items:
+                $ref: '#/components/schemas/CarResponseDTO'
+
+    UserDTO:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: '^(.+)@(.+)$'
+        username:
+          type: string
+          minLength: 1
+        firstName:
+          type: string
+        lastName:
+          type: string
+        country:
+          type: string
+        driverLicenseNo:
+          type: string
+          minLength: 1
+        title:
+          type: string
+      required:
+        - email
+        - username
+        - driverLicenseNo
+
+    UserRequestDTO:
+      allOf:
+        - $ref: '#/components/schemas/UserDTO'
+        - type: object
+          properties:
+            password:
+              type: string
+              format: password
+              minLength: 5
+          required:
+            - password
+
+    UserStatusDTO:
+      type: string
+      enum: [ACTIVE, DELETED]
+
+    UserResponseDTO:
+      allOf:
+        - $ref: '#/components/schemas/UserDTO'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              $ref: '#/components/schemas/UserStatusDTO'
+        
+    CarRequestDTO:
+      type: object
+      properties:
+        make:
+          type: string
+          minLength: 1
+        model:
+          type: string
+          minLength: 1
+        year:
+          type: integer
+          format: int32
+        mileage:
+          type: integer
+          format: int32
+        fuel:
+          type: string
+        clazzCode:
+          $ref: '#/components/schemas/CarClazzCodeDTO'
+        registrationNo:
+          type: string
+          minLength: 1
+      required:
+        - make
+        - model
+        - registrationNo
+
+    CarClazzCodeDTO:
+      type: string
+      enum: [Compact Car, Sport Utility vehicle, Sedan, Sports car, Truck, Luxury vehicle, Van, Minivan, Full-size care, Mind-size car, Convertible, Hybrid vehicle, Hatchback, Crossover, Coupe]
+
+    CarStatusDTO:
+      type: string
+      enum: [ACTIVE, DELETED]
+
+    CarResponseDTO:
+      allOf:
+        - $ref: '#/components/schemas/CarRequestDTO'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              $ref: '#/components/schemas/CarStatusDTO'
+
+    CountryRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        isoCode:
+          type: string
+          minLength: 2
+      required:
+        - name
+        - isoCode
+
+    CountryStatusDTO:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+
+    CountryResponseDTO:
+      allOf:
+        - $ref: '#/components/schemas/CountryRequestDTO'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              $ref: '#/components/schemas/CountryStatusDTO'
+
+    ValidationDTO:
+      type: object
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        description:
+          type: string
+
+    ErrorDTO:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  securitySchemes:
+    oAuth:
+      type: oauth2
+      description: This API uses OAuth2 with the password flow
+      flows:
+        password:
+          tokenUrl: /oauth/token
+          scopes:
+            read: get information from the API
+            write: use the API to make changes to the supporting data model

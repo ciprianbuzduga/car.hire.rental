@@ -1,0 +1,441 @@
+openapi: 3.0.1
+info:
+  title: Car Hire API
+  version: 0.1.0
+  contact:
+    name: Ciprian Buzduga
+  description: Car Hire API
+servers:
+  - url: http://localhost:{port}
+    description: local environment
+    variables:
+      port:
+        default: '8090'
+
+security:
+  - oAuth:
+      - write
+      - read
+
+paths:
+  /rentals:
+    post:
+      tags:
+        - rental
+      summary: Create a reservation
+      description: Create a reservation
+      operationId: createRental
+      requestBody:
+        description: Payload of rental
+        required : true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalRequestDTO'
+      responses:
+        '201':
+          description: A new rental was added with success
+          headers:
+            'Location':
+              $ref: '#/components/headers/RentalLocation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      tags:
+        - rental
+      summary: Return a paginated list with the rentals
+      description: Return a paginated list with the rentals
+      operationId: getRentals
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of page used in pagination
+          required: false
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          required: false
+          description: The number of rentals retrived from current page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: 'startDate,desc'
+          required: false  
+          description: A pair consists from property name and type of sorting splits by a comma
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: false  
+          description: A value to filter rentals by user id
+        - in: query
+          name: carId
+          schema:
+            type: string
+          required: false  
+          description: A value to filter rentals by car id
+        - in: query
+          name: status
+          schema:
+            type: string
+          required: false  
+          description: A value to filter rentals by status
+      responses:
+        '200':
+          $ref: '#/components/responses/PageRentals'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /rentals/{id}:
+    get:
+      tags:
+        - rental
+      summary: Return a reservation by id.
+      description: Return a reservation by id. The id is a string.
+      operationId: getRental
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of rental
+          required: true
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/RentalResponseDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - rental
+      summary: Delete a rental by id
+      description: Delete a rental by id. The id is a string.
+      operationId: deleteRental
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of rental
+          required: true
+      responses:
+        '204':
+          description: Cancel a rental with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    patch:
+      tags:
+        - rental
+      summary: Update a reservation
+      description: Update a reservation’s details using a PATCH request
+      operationId: updateRental
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: The id of rental
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/PatchBody'
+      responses:
+        '204':
+          description: Update a rental with success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  requestBodies:
+    PatchBody:
+      description: A message in JsonPatch format
+      required: true
+      content:
+        application/json-patch+json:
+          schema:
+            $ref: '#/components/schemas/PatchBody'
+
+  responses:
+    Unauthorized:
+      description: unauthorized
+
+    BadRequest:
+      description: bad request
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ValidationDTO'
+
+    ResourceNotFoundError:
+      description: resource not found error
+    ServerError:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDTO'
+
+    PageRentals:
+      description: A page with rentals retrived from getRentals call
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PageRentals'
+
+  headers:
+    RentalLocation:
+      schema:
+        type: string
+      description: The url for access a rental by id
+
+  schemas:
+    PatchBody:
+      type: array
+      items:
+        $ref: '#/components/schemas/PatchDocument'
+
+    PatchDocument:
+      type: object
+      description: A JSONPatch document as defined by RFC 6902.
+      required:
+       - 'op'
+       - 'path'
+       - 'value'
+      properties: 
+       op: 
+        type: string 
+        description: The operation to be performed 
+        enum:
+         - 'add'
+         - 'remove'
+         - 'replace'
+         - 'move'
+         - 'copy'
+         - 'test'
+       path: 
+        type: string 
+        description: A JSON-Pointer 
+       value: 
+        type: object 
+        description: The value to be used within the operations.
+       from: 
+        type: string 
+        description: A string containing a JSON Pointer value.
+
+    PageRecords:
+      type: object
+      properties:
+        totalNoRecords:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        currentPage:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+
+    PageRentals:
+      allOf:
+        - $ref: '#/components/schemas/PageRecords'
+        - type: object
+          properties:
+            rentals:
+              type: array
+              items:
+                $ref: '#/components/schemas/RentalResponseDTO'
+
+    UserDTO:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: '^(.+)@(.+)$'
+        username:
+          type: string
+          minLength: 1
+        firstName:
+          type: string
+        lastName:
+          type: string
+        country:
+          type: string
+        driverLicenseNo:
+          type: string
+          minLength: 1
+        title:
+          type: string
+      required:
+        - email
+        - username
+        - driverLicenseNo
+
+    UserStatusDTO:
+      type: string
+      enum: [ACTIVE, DELETED]
+
+    UserResponseDTO:
+      allOf:
+        - $ref: '#/components/schemas/UserDTO'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              $ref: '#/components/schemas/UserStatusDTO'
+        
+    CarRequestDTO:
+      type: object
+      properties:
+        make:
+          type: string
+          minLength: 1
+        model:
+          type: string
+          minLength: 1
+        year:
+          type: integer
+          format: int32
+        mileage:
+          type: integer
+          format: int32
+        fuel:
+          type: string
+        clazzCode:
+          $ref: '#/components/schemas/CarClazzCodeDTO'
+        registrationNo:
+          type: string
+          minLength: 1
+      required:
+        - make
+        - model
+        - registrationNo
+
+    CarClazzCodeDTO:
+      type: string
+      enum: [Compact Car, Sport Utility vehicle, Sedan, Sports car, Truck, Luxury vehicle, Van, Minivan, Full-size care, Mind-size car, Convertible, Hybrid vehicle, Hatchback, Crossover, Coupe]
+
+    CarStatusDTO:
+      type: string
+      enum: [ACTIVE, DELETED]
+
+    CarResponseDTO:
+      allOf:
+        - $ref: '#/components/schemas/CarRequestDTO'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              $ref: '#/components/schemas/CarStatusDTO'
+
+    RentalRequestDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+        carId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+
+    RentalStatusDTO:
+      type: string
+      enum: [ACTIVE, CANCELLED]
+
+    RentalResponseDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserResponseDTO'
+        car:
+          $ref: '#/components/schemas/CarResponseDTO'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/RentalStatusDTO'
+
+    ValidationDTO:
+      type: object
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        description:
+          type: string
+
+    ErrorDTO:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  securitySchemes:
+    oAuth:
+      type: oauth2
+      description: This API uses OAuth2 with the password flow
+      flows:
+        password:
+          tokenUrl: /oauth/token
+          scopes:
+            read: get information from the API
+            write: use the API to make changes to the supporting data model
