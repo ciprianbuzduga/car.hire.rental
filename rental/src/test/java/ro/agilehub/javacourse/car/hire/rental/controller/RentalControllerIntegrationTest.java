@@ -3,6 +3,7 @@ package ro.agilehub.javacourse.car.hire.rental.controller;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,7 +24,9 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
@@ -33,6 +36,10 @@ import ro.agilehub.javacourse.car.hire.rental.api.model.RentalResponseDTO;
 import ro.agilehub.javacourse.car.hire.rental.api.model.RentalStatusDTO;
 import ro.agilehub.javacourse.car.hire.rental.base.test.MockMvcIntegrationMongoSetup;
 import ro.agilehub.javacourse.car.hire.rental.base.test.SpringJUnit4ClassRunnerFactory;
+import ro.agilehub.javacourse.car.hire.rental.client.core.model.CarResponseDTO;
+import ro.agilehub.javacourse.car.hire.rental.client.core.model.UserResponseDTO;
+import ro.agilehub.javacourse.car.hire.rental.client.core.specification.CarApi;
+import ro.agilehub.javacourse.car.hire.rental.client.core.specification.UserApi;
 import ro.agilehub.javacourse.car.hire.rental.document.RentalDoc;
 
 @SpringBootTest
@@ -46,6 +53,12 @@ public class RentalControllerIntegrationTest extends MockMvcIntegrationMongoSetu
 
 	@Parameter
 	public UserRequestPostProcessor runWithRole;
+
+	@MockBean
+	private UserApi userApi;
+
+	@MockBean
+	private CarApi carApi;
 
 	private static MongoTemplate staticMongoTemplate;
 
@@ -61,6 +74,9 @@ public class RentalControllerIntegrationTest extends MockMvcIntegrationMongoSetu
 
 		carId = UUID.randomUUID().toString();
 		userId = UUID.randomUUID().toString();
+
+		when(carApi.getCar(carId)).thenReturn(ResponseEntity.ok(new CarResponseDTO()));
+		when(userApi.getUser(userId)).thenReturn(ResponseEntity.ok(new UserResponseDTO()));
 	}
 
 	@Parameters
