@@ -20,6 +20,8 @@
         <module>api-rental</module>
         <module>boot-rental</module>
         <module>client.core</module>
+        <module>repository</module>
+        <module>controller</module>
     </modules>
 
     <properties>

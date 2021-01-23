@@ -19,6 +19,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ServerSecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	public ServerSecurityConfig() {
+		System.out.println(">>>>>>>>>>>>>>> ServerSecurityConfig");
+	}
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

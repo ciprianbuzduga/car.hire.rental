@@ -3,6 +3,8 @@
 /client.core/target/
 /boot-rental/target/
 /api-rental/target/
+/controller/target/
+/repository/target/
 /.settings
 /.project
 /rental/.settings
@@ -17,3 +19,9 @@
 /api-rental/.settings
 /api-rental/.classpath
 /api-rental/.project
+/controller/.settings
+/controller/.classpath
+/controller/.project
+/repository/.settings
+/repository/.project
+/repository/.classpath

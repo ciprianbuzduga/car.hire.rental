@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class CarHireRentalApplication {
 
     public static void main(final String[] args) {
+    	System.out.println(">>>>>>>>>>>>>>> CarHireRentalApplication");
         SpringApplication.run(CarHireRentalApplication.class, args);
     }
 }

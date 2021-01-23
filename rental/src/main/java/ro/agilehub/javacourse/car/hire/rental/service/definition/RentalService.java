@@ -2,22 +2,21 @@ package ro.agilehub.javacourse.car.hire.rental.service.definition;
 
 import java.util.List;
 
-import ro.agilehub.javacourse.car.hire.rental.api.model.PageRentals;
-import ro.agilehub.javacourse.car.hire.rental.api.model.PatchDocument;
-import ro.agilehub.javacourse.car.hire.rental.api.model.RentalRequestDTO;
-import ro.agilehub.javacourse.car.hire.rental.api.model.RentalResponseDTO;
+import ro.agilehub.javacourse.car.hire.rental.domain.RentalDO;
 
 public interface RentalService {
 
 	boolean deleteRental(String id);
 
-	String createRental(RentalRequestDTO rentalDTO);
+	String createRental(RentalDO rentalDO);
 
-	RentalResponseDTO getRental(String id);
+	RentalDO getRentalDO(String id);
 
-	PageRentals findAll(Integer page, Integer size, String sort, String userId,
+	int countRentals(String userId, String carId, String status);
+
+	List<RentalDO> listRentalDO(Integer page, Integer size, String userId,
 			String carId, String status);
 
-	boolean updateRental(String id, List<PatchDocument> patchDocuments);
+	//boolean updateRental(String id, List<PatchDocument> patchDocuments);
 
 }
